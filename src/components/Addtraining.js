@@ -22,8 +22,6 @@ export default function Addtraining (props) {
     const handleClickOpen = () => {
         setTraining({
             date: props.date,
-            activity: props.activity,
-            duration: props.duration,
             customer: props.customer
         })
         setOpen(true);

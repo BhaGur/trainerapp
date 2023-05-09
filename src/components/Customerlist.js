@@ -1,5 +1,6 @@
 import React, { useState, useEffect} from 'react';
-import { AgGridReact } from 'ag-grid-react';
+import { Box } from '@mui/material';
+
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import { API_URL } from '../constants';
@@ -7,7 +8,9 @@ import Addcustomer from './Addcustomer';
 import Editcustomer from './Editcustomer';
 import Addtraining from './Addtraining';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import moment from 'moment';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
@@ -18,35 +21,70 @@ export default function Customerlist() {
     const [msg, setMsg] = useState();
 
     const [columnDefs] = useState([
-        {cellRenderer: params =>
-            <Editcustomer
-                params = {params.data}
-                updateCustomer ={updateCustomer} />
-            , width: 70},
-        {cellRenderer: params => 
-            <Button 
-                size='small' 
-                color='error'
-                onClick={() => deleteCustomer(params)}
-                startIcon = {<DeleteIcon />}
-            >
-            </Button>, width: 70},
-        {cellRenderer: params =>
-            <Addtraining
-                date={moment()}
-                activity=''
-                duration=''
-                customer={params.data.links[1].href}
-                saveTraining ={addTrainingToCustomers} />
-            , width: 150},
-        {field: 'firstname', sortable: true, filter: true, width: 130},
-        {field: 'lastname', sortable: true, filter: true, width: 135},
-        {field: 'streetaddress', sortable: true, filter: true, width: 200},
-        {field: 'postcode', sortable: true, filter: true, width: 130},
-        {field: 'city', sortable: true, filter: true, width: 110},
-        {field: 'email', sortable: true, filter: true, width: 200},
-        {field: 'phone', sortable: true, filter: true, width: 150}
+        {
+            headerName: "Edit",
+            field: "edit",
+            width: 60, 
+            disableExport: true, 
+            renderCell: (params) => <EditButtonCell {...params} />
+        },
+        {
+            headerName: "Delete",
+            field: "delete",
+            width: 60,
+            disableExport: true,
+            renderCell: (params) => <DeleteButtonCell {...params} />
+        },
+        {
+            headerName: "Add Training",
+            field: "addTraining",
+            width: 130,
+            disableExport: true,
+            renderCell: (params) => <AddTrainingButtonCell {...params} />
+        },
+        {headerName: "First Name", field: 'firstname', sortable: true, filter: true, width: 120},
+        {headerName: "Last Name", field: 'lastname', sortable: true, filter: true, width: 125},
+        {headerName: "Street Address", field: 'streetaddress', sortable: true, filter: true, width: 190},
+        {headerName: "Postcode", field: 'postcode', sortable: true, filter: true, width: 100},
+        {headerName: "City", field: 'city', sortable: true, filter: true, width: 110},
+        {headerName: "E-mail", field: 'email', sortable: true, filter: true, width: 200},
+        {headerName: "Phone", field: 'phone', sortable: true, filter: true, width: 150}
     ]);
+
+    function EditButtonCell(props) {
+        return (
+          <Editcustomer
+            params={props.row}
+            updateCustomer={updateCustomer}
+          >
+            <EditIcon />
+          </Editcustomer>
+        );
+    }
+      
+    function DeleteButtonCell(props) {
+        return (
+          <Button
+            size="small"
+            color="error"
+            onClick={() => deleteCustomer(props.row)}
+          >
+            <DeleteIcon />
+          </Button>
+        );
+    }
+      
+    function AddTrainingButtonCell(props) {
+        return (
+          <Addtraining
+            date={moment()}
+            activity=""
+            duration=""
+            customer={props.row.links[1].href}
+            saveTraining={addTrainingToCustomers}
+          />
+        );
+    }
 
     const getCustomers = () => {
         fetch(API_URL+'/customers')
@@ -149,18 +187,27 @@ export default function Customerlist() {
     }, []);
 
     return (
-       <> 
-            <div
-                className='ag-theme-material'
-                style={{width: '90%', height: 600, margin: 'auto'}}>
-                <Addcustomer addCustomer={addCustomer}/>    
-                <AgGridReact
-                    rowData={customers}
-                    columnDefs={columnDefs}
-                    pagination={true}
-                    paginationPageSize={10}
-                />        
-            </div>
+       <>                 
+        <Addcustomer addCustomer={addCustomer}/>    
+        <Box display="flex" justifyContent="center" alignItems="center" width="100%">
+            <Box width="95%">
+                <div
+                    style={{width: '90%', height: 600, margin: 'auto'}}>
+                    <DataGrid 
+                        components={{ Toolbar: GridToolbar  }}
+                        rows={customers}
+                        columns={columnDefs}
+                        initialState={{
+                        pagination: { paginationModel: { pageSize: 10 } },
+                        }}
+                        pagination
+                        pageSize={10}
+                        pageSizeOptions={[5, 10, 15]}
+                        getRowId={(row) => row.email} 
+                    />
+                </div>
+            </Box>
+        </Box>
             <Snackbar
                 open={open}
                 autoHideDuration={3000}

@@ -4,21 +4,22 @@ import dayjs from 'dayjs';
 import { Snackbar } from '@mui/material';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { API_URL } from '../constants';
+import { URL } from '../constants';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
 
 export default function Traininglist() {
     const [trainings, setTrainings] = useState([]);
-    const [open, setOpen] = useState(false);
-    const [msg, setMsg] = useState();
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+
 
     const [columnDefs] = useState([
-        {field: 'date', sortable: true, filter: true},
-        {field: 'duration', sortable: true, filter: true},
-        {field: 'activity', sortable: true, filter: true},
-        {field: 'customer', sortable: true, filter: true},
+        {headerName: "Date", field: 'date', sortable: true, filter: true},
+        {headerName: "Duration", field: 'duration', sortable: true, filter: true},
+        {headerName: "Activity (min)", field: 'activity', sortable: true, filter: true},
+        {headerName: "Customer Name", field: 'customer', sortable: true, filter: true},
         {
             cellRenderer: params => 
             <Button 
@@ -32,7 +33,7 @@ export default function Traininglist() {
     ]);
 
     const getTrainings = () => {
-        fetch(API_URL+'/trainings')
+        fetch(URL)
         .then(response => {
             if (response.ok){
                 return response.json();
@@ -43,33 +44,38 @@ export default function Traininglist() {
         })
         .then((data) => {
             Promise.all(
-                data.content.map((training) =>
-                    fetch(training.links.find((link) => link.rel === "customer").href)
-                        .then((response) => response.json())
-                        .then((customerData) => ({
-                            date: dayjs(training.date).format("DD.MM.YYYY HH:mm"),
-                            duration: training.duration,
-                            activity: training.activity,
-                            customer: `${customerData.firstname} ${customerData.lastname}`,
-                            link: training.links[0].href,
-                        })
-                    )
+                data.map((training) =>
+                    ({
+                        date: dayjs(training.date).format("DD.MM.YYYY HH:mm"),
+                        duration: training.duration,
+                        activity: training.activity,
+                        customer: `${training.customer.firstname} ${training.customer.lastname}`,
+                    })
                 )
             )
             .then((formattedTrainings) => setTrainings(formattedTrainings))
             .catch(err => console.error(err))
         });
     }
-
+    
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === "clickaway") {
+          return;
+        }
+        setSnackbarOpen(false);
+    };
+    
     const deleteTraining = (params) => {
         if (window.confirm('Are you sure?')) {
-            fetch(params.data.link, { method: 'DELETE'})
+            const url = params.links.find((link) => link.rel === "self").href;
+            fetch(url, { method: 'DELETE'})
             .then(response => {
                 if (response.ok) {
-                    getTrainings();
-                    setMsg("Training deleted");
-                    setOpen(true);
-                    getTrainings();
+                    setTrainings((prevTrainings) =>
+                    prevTrainings.filter((t) => t.links[0].href !== url)
+                  );
+                  setSnackbarMessage("Training deleted successfully");
+                  setSnackbarOpen(true);
                 }
                 else {
                     alert('Something went wrong in deletion');
@@ -97,10 +103,10 @@ export default function Traininglist() {
                 />        
             </div>
             <Snackbar
-                open={open}
+                open={snackbarOpen}
                 autoHideDuration={3000}
-                onClose= {() => setOpen(false)}
-                message={msg}
+                onClose= {handleSnackbarClose}
+                message={snackbarMessage}
             />
        </>     
     );
