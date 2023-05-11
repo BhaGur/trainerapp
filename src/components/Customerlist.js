@@ -102,7 +102,7 @@ export default function Customerlist() {
 
     const deleteCustomer= (params) => {
         if (window.confirm('Are you sure?')) {
-            fetch(params.data.links[0].href.replace("http://", "https://"), { method: 'DELETE'})
+            fetch(params.links[0].href.replace("http://", "https://"), { method: 'DELETE'})
             .then((response) => {
                 if (response.ok) {
                     setMsg("Customer deleted");
