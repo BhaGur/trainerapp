@@ -1,10 +1,10 @@
 import React, { useState, useEffect} from 'react';
-import { AgGridReact } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { Snackbar } from '@mui/material';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { URL } from '../constants';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { Box } from '@mui/material';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-material.css';
@@ -14,24 +14,31 @@ export default function Traininglist() {
     const [open, setOpen] = useState(false);
     const [msg, setMsg] = useState();
 
-
-    const [columnDefs] = useState([
-        
-        {headerName: "Date", field: 'date', sortable: true, filter: true},
-        {headerName: "Duration", field: 'duration', sortable: true, filter: true},
-        {headerName: "Activity (min)", field: 'activity', sortable: true, filter: true},
-        {headerName: "Customer Name", field: 'customer', sortable: true, filter: true},
+    const [columnDefs] = useState([    
+        {headerName: "Date", field: 'date', sortable: true, filter: true, width: 200},
+        {headerName: "Duration", field: 'duration', sortable: true, filter: true, width: 200},
+        {headerName: "Activity (min)", field: 'activity', sortable: true, filter: true, width: 200},
+        {headerName: "Customer Name", field: 'customer', sortable: true, filter: true, width: 200},
         {
-            cellRenderer: params => 
-            <Button 
-                size='small' 
-                color='error'
-                onClick={() => deleteTraining(params)}
-                startIcon={<DeleteIcon />}
-            >
-            </Button>
-            , width: 120}
+            headerName: "Delete",
+            field: "delete",
+            width: 150,
+            disableExport: true,
+            renderCell: (params) => <DeleteButtonCell {...params} />
+        }
     ]);
+
+    function DeleteButtonCell(props) {
+        return (
+            <Button         
+            size='small'
+            color='error'
+            onClick={() => deleteTraining(props.row)}
+            >
+                <DeleteIcon />
+            </Button>
+        )
+    }
 
     const getTrainings = () => {
         fetch('https://traineeapp.azurewebsites.net/gettrainings')
@@ -62,7 +69,7 @@ export default function Traininglist() {
     
     
     const deleteTraining = (params) => {
-        const id = params.data.id;
+        const id = params.id;
         
         if (window.confirm('Are you sure?')) {
           const deleteURL = `https://traineeapp.azurewebsites.net/api/trainings/${id}`;
@@ -88,16 +95,25 @@ export default function Traininglist() {
 
     return (
         <> 
-            <div
-                className='ag-theme-material'
-                style={{width: '90%', height: 600, margin: 'auto'}}>
-                <AgGridReact
-                    rowData={trainings}
-                    columnDefs={columnDefs}
-                    pagination={true}
-                    paginationPageSize={10}
-                />        
-            </div>
+           <Box display="flex" justifyContent="center" alignItems="center" width="100%">
+                <Box width="95%">
+                    <div
+                        style={{width: '90%', height: 600, margin: 'auto'}}>
+                        <DataGrid
+                            components={{Toolbar: GridToolbar}}
+                            rows={trainings}
+                            columns={columnDefs}
+                            initialState={{
+                            pagination: { paginationModel: { pageSize: 10 } },
+                            }}
+                            pagination
+                            pageSize={10}
+                            pageSizeOptions={[5, 10, 15]}
+                            getRowId={(row) => row.id} 
+                        />        
+                    </div>
+                </Box> 
+            </Box> 
             <Snackbar
                 open={open}
                 autoHideDuration={3000}
