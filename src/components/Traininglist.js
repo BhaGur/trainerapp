@@ -11,11 +11,12 @@ import 'ag-grid-community/styles/ag-theme-material.css';
 
 export default function Traininglist() {
     const [trainings, setTrainings] = useState([]);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [open, setOpen] = useState(false);
+    const [msg, setMsg] = useState();
 
 
     const [columnDefs] = useState([
+        
         {headerName: "Date", field: 'date', sortable: true, filter: true},
         {headerName: "Duration", field: 'duration', sortable: true, filter: true},
         {headerName: "Activity (min)", field: 'activity', sortable: true, filter: true},
@@ -46,6 +47,7 @@ export default function Traininglist() {
             Promise.all(
                 data.map((training) =>
                     ({
+                        id: training.id,
                         date: dayjs(training.date).format("DD.MM.YYYY HH:mm"),
                         duration: training.duration,
                         activity: training.activity,
@@ -58,32 +60,26 @@ export default function Traininglist() {
         });
     }
     
-    const handleSnackbarClose = (event, reason) => {
-        if (reason === "clickaway") {
-          return;
-        }
-        setSnackbarOpen(false);
-    };
     
     const deleteTraining = (params) => {
+        const id = params.data.id;
+        
         if (window.confirm('Are you sure?')) {
-            const url = params.links.find((link) => link.rel === "self").href;
-            fetch(url, { method: 'DELETE'})
+          const deleteURL = `http://traineeapp.azurewebsites.net/api/trainings/${id}`;
+      
+          fetch(deleteURL, { method: 'DELETE' })
             .then(response => {
-                if (response.ok) {
-                    setTrainings((prevTrainings) =>
-                    prevTrainings.filter((t) => t.links[0].href !== url)
-                  );
-                  setSnackbarMessage("Training deleted successfully");
-                  setSnackbarOpen(true);
-                }
-                else {
-                    alert('Something went wrong in deletion');
-                }
+              if (response.ok) {
+                getTrainings();
+                setMsg("Training deleted");
+                setOpen(true);
+              } else {
+                alert('Something went wrong in deletion');
+              }
             })
-            .catch(err => console.error(err))
-        } 
-    }
+            .catch(err => console.error(err));
+        }
+      };
 
 
     useEffect(() => {
@@ -103,10 +99,10 @@ export default function Traininglist() {
                 />        
             </div>
             <Snackbar
-                open={snackbarOpen}
+                open={open}
                 autoHideDuration={3000}
-                onClose= {handleSnackbarClose}
-                message={snackbarMessage}
+                onClose= {() => setOpen(false)}
+                message={msg}
             />
        </>     
     );
