@@ -67,7 +67,7 @@ export default function Traininglist() {
         if (window.confirm('Are you sure?')) {
           const deleteURL = `http://traineeapp.azurewebsites.net/api/trainings/${id}`;
       
-          fetch(deleteURL, { method: 'DELETE' })
+          fetch(deleteURL.replace("http://", "https://"), { method: 'DELETE' })
             .then(response => {
               if (response.ok) {
                 getTrainings();
