@@ -87,7 +87,7 @@ export default function Customerlist() {
     }
 
     const getCustomers = () => {
-        fetch(API_URL+'/customers')
+        fetch('https://traineeapp.azurewebsites.net/api/customers')
         .then(response => {
             if (response.ok) {
                 return response.json();
@@ -118,7 +118,7 @@ export default function Customerlist() {
     };
 
     const addCustomer = (customer) => {
-        fetch(API_URL + '/customers', {
+        fetch( 'https://traineeapp.azurewebsites.net/api/customers', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

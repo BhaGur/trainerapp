@@ -34,7 +34,7 @@ export default function Traininglist() {
     ]);
 
     const getTrainings = () => {
-        fetch(URL)
+        fetch('https://traineeapp.azurewebsites.net/gettrainings')
         .then(response => {
             if (response.ok){
                 return response.json();
@@ -65,7 +65,7 @@ export default function Traininglist() {
         const id = params.data.id;
         
         if (window.confirm('Are you sure?')) {
-          const deleteURL = `http://traineeapp.azurewebsites.net/api/trainings/${id}`;
+          const deleteURL = `https://traineeapp.azurewebsites.net/api/trainings/${id}`;
       
           fetch(deleteURL.replace("http://", "https://"), { method: 'DELETE' })
             .then(response => {
