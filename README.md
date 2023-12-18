@@ -1,3 +1,22 @@
+# Trainer App with React
+This project was built as a part of the final project for Front End Development course.
+
+## Technologies used
+* React App
+* ES6 modules
+* REST API to fetch data
+* Lodash
+* Deployement in Github
+
+## About the app
+* Personal trainer app for managing customers and trainers
+* Admin can add trainings and trainers for customers
+* CRUD operation for admin
+* Searching and sorting feature
+* Export data in .CSV file
+* Calendar listing all the training sessions
+* Chart showing the activities by minutes
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
